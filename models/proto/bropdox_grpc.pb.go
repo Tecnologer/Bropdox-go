@@ -18,9 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BropdoxClient interface {
-	CreateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error)
-	UpdateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error)
-	RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error)
+	CreateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
+	UpdateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
+	RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
 	Notifications(ctx context.Context, in *File, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error)
 }
 
@@ -32,8 +32,8 @@ func NewBropdoxClient(cc grpc.ClientConnInterface) BropdoxClient {
 	return &bropdoxClient{cc}
 }
 
-func (c *bropdoxClient) CreateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error) {
-	out := new(FileResponse)
+func (c *bropdoxClient) CreateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.Bropdox/CreateFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -41,8 +41,8 @@ func (c *bropdoxClient) CreateFile(ctx context.Context, in *File, opts ...grpc.C
 	return out, nil
 }
 
-func (c *bropdoxClient) UpdateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error) {
-	out := new(FileResponse)
+func (c *bropdoxClient) UpdateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.Bropdox/UpdateFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -50,8 +50,8 @@ func (c *bropdoxClient) UpdateFile(ctx context.Context, in *File, opts ...grpc.C
 	return out, nil
 }
 
-func (c *bropdoxClient) RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*FileResponse, error) {
-	out := new(FileResponse)
+func (c *bropdoxClient) RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.Bropdox/RemoveFile", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (c *bropdoxClient) Notifications(ctx context.Context, in *File, opts ...grp
 }
 
 type Bropdox_NotificationsClient interface {
-	Recv() (*FileResponse, error)
+	Recv() (*Response, error)
 	grpc.ClientStream
 }
 
@@ -83,8 +83,8 @@ type bropdoxNotificationsClient struct {
 	grpc.ClientStream
 }
 
-func (x *bropdoxNotificationsClient) Recv() (*FileResponse, error) {
-	m := new(FileResponse)
+func (x *bropdoxNotificationsClient) Recv() (*Response, error) {
+	m := new(Response)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -95,9 +95,9 @@ func (x *bropdoxNotificationsClient) Recv() (*FileResponse, error) {
 // All implementations should embed UnimplementedBropdoxServer
 // for forward compatibility
 type BropdoxServer interface {
-	CreateFile(context.Context, *File) (*FileResponse, error)
-	UpdateFile(context.Context, *File) (*FileResponse, error)
-	RemoveFile(context.Context, *File) (*FileResponse, error)
+	CreateFile(context.Context, *File) (*Response, error)
+	UpdateFile(context.Context, *File) (*Response, error)
+	RemoveFile(context.Context, *File) (*Response, error)
 	Notifications(*File, Bropdox_NotificationsServer) error
 }
 
@@ -105,13 +105,13 @@ type BropdoxServer interface {
 type UnimplementedBropdoxServer struct {
 }
 
-func (UnimplementedBropdoxServer) CreateFile(context.Context, *File) (*FileResponse, error) {
+func (UnimplementedBropdoxServer) CreateFile(context.Context, *File) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFile not implemented")
 }
-func (UnimplementedBropdoxServer) UpdateFile(context.Context, *File) (*FileResponse, error) {
+func (UnimplementedBropdoxServer) UpdateFile(context.Context, *File) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateFile not implemented")
 }
-func (UnimplementedBropdoxServer) RemoveFile(context.Context, *File) (*FileResponse, error) {
+func (UnimplementedBropdoxServer) RemoveFile(context.Context, *File) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFile not implemented")
 }
 func (UnimplementedBropdoxServer) Notifications(*File, Bropdox_NotificationsServer) error {
@@ -192,7 +192,7 @@ func _Bropdox_Notifications_Handler(srv interface{}, stream grpc.ServerStream) e
 }
 
 type Bropdox_NotificationsServer interface {
-	Send(*FileResponse) error
+	Send(*Response) error
 	grpc.ServerStream
 }
 
@@ -200,7 +200,7 @@ type bropdoxNotificationsServer struct {
 	grpc.ServerStream
 }
 
-func (x *bropdoxNotificationsServer) Send(m *FileResponse) error {
+func (x *bropdoxNotificationsServer) Send(m *Response) error {
 	return x.ServerStream.SendMsg(m)
 }
 
