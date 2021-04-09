@@ -2,7 +2,9 @@ package file
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/tecnologer/bropdox/models/proto"
@@ -17,6 +19,10 @@ func GetContent(path string) ([]byte, error) {
 }
 
 func GetEmpty(path string) (*proto.File, error) {
+	if !strings.HasPrefix(path, "./") {
+		path = "./" + path
+	}
+
 	return &proto.File{
 		Path: path,
 	}, nil
@@ -46,4 +52,21 @@ func IsFolder(path string) (bool, error) {
 	}
 
 	return fi.Mode().IsDir(), nil
+}
+
+func listFolders(path string) ([]string, error) {
+	folders := make([]string, 0)
+	elements, err := ioutil.ReadDir(path)
+	if err != nil {
+		return nil, errors.Wrapf(err, "listing folders from %s", path)
+	}
+
+	for _, element := range elements {
+		if !element.IsDir() {
+			continue
+		}
+
+		folders = append(folders, element.Name())
+	}
+	return folders, nil
 }
