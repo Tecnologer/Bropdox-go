@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
+	"github.com/tecnologer/bropdox/models/file"
 	"github.com/tecnologer/bropdox/models/proto"
-	"github.com/tecnologer/bropdox/server/file"
 )
 
 type BropdoxServer struct{}

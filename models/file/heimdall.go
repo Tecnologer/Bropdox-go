@@ -1,6 +1,8 @@
 package file
 
 import (
+	"strings"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -24,25 +26,48 @@ func CreateWatcher(path string, out chan<- *proto.Response) (err error) {
 	go func() {
 		for event := range watcher.Events {
 			var eventType proto.TypeResponse
-			if event.Op&fsnotify.Write == fsnotify.Write {
+
+			isRemoved := event.Op&fsnotify.Remove == fsnotify.Remove
+
+			if !isRemoved {
+				isFolder, err := IsFolder(event.Name)
+				if err != nil {
+					out <- proto.ParseErrorToResponse(err)
+					continue
+				}
+
+				if isFolder {
+					continue
+				}
+			}
+
+			switch {
+			case event.Op&fsnotify.Write == fsnotify.Write:
 				log.Debug("modified file:", event.Name)
 				eventType = proto.TypeResponse_UPDATED
-			} else if event.Op&fsnotify.Create == fsnotify.Create {
+			case event.Op&fsnotify.Create == fsnotify.Create:
 				log.Debug("created file:", event.Name)
 				eventType = proto.TypeResponse_CREATED
-			} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-				log.Debug("created file:", event.Name)
+			case isRemoved:
+				log.Debug("deleted file:", event.Name)
 				eventType = proto.TypeResponse_DELETED
-			} else {
+			default:
 				continue
 			}
 
-			fileData, err := Get(event.Name)
+			var fileData *proto.File
+			if isRemoved {
+				fileData, _ = GetEmpty(event.Name)
+			} else {
+				fileData, err = Get(event.Name)
+			}
+
 			if err != nil {
 				out <- proto.ParseErrorToResponse(err)
 				continue
 			}
 
+			fileData.Path = strings.Replace(fileData.Path, path, "", 1)
 			out <- proto.CreateFileResponse(fileData, eventType)
 		}
 	}()

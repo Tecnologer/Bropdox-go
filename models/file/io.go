@@ -16,6 +16,12 @@ func GetContent(path string) ([]byte, error) {
 	return nil, nil
 }
 
+func GetEmpty(path string) (*proto.File, error) {
+	return &proto.File{
+		Path: path,
+	}, nil
+}
+
 func Get(path string) (*proto.File, error) {
 	open, e := os.Open(path)
 	if e != nil {
@@ -27,10 +33,17 @@ func Get(path string) (*proto.File, error) {
 		return nil, errors.Wrap(e, "file get: reading")
 	}
 
-	file := &proto.File{
-		Path:    path,
-		Content: data,
-	}
+	file, _ := GetEmpty(path)
+	file.Content = data
 
 	return file, nil
+}
+
+func IsFolder(path string) (bool, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, errors.Wrapf(err, "isFolder: getting stats for %s", path)
+	}
+
+	return fi.Mode().IsDir(), nil
 }
