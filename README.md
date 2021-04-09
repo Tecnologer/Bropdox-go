@@ -23,6 +23,16 @@ Remote File manager with Go + gRPC
 8. Click "play"
 
 ### Example
+
 ![image](https://user-images.githubusercontent.com/8458967/114126065-493e6980-98bd-11eb-9a3a-6da121defed8.png)
+
+## ToDo
+
+- [x] Detect Changes
+- [ ] Create File
+- [ ] Update File
+- [ ] Delete File
+- [ ] gRPC Client
+- [ ] GUI for Client
 
 [1]: https://github.com/uw-labs/bloomrpc/releases
