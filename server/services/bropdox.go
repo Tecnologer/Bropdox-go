@@ -52,5 +52,3 @@ func (bs *BropdoxServer) Notifications(in *proto.File, stream proto.Bropdox_Noti
 	}
 	return nil
 }
-
-func (bs *BropdoxServer) mustEmbedUnimplementedBropdoxServer() {}
