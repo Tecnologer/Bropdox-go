@@ -1,25 +1,63 @@
 package file
 
 import (
-	"strings"
-
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/tecnologer/bropdox/models/proto"
 )
 
-var watcher *fsnotify.Watcher
+var (
+	watchers      *watcherCollection
+	isRecursively bool
+)
 
-func CreateWatcher(path string, out chan<- *proto.Response) (err error) {
+func CreateWatcherRecursive(path string, out chan<- *proto.Response) (err error) {
+	watchers = newWatcherCollection()
+	isRecursively = true
+
+	err = addWatcherRecursive(path, out)
+	if err != nil {
+		return errors.Wrapf(err, "creating watcher recursively for %s", path)
+	}
+
+	return nil
+}
+
+func addWatcherRecursive(path string, out chan<- *proto.Response) (err error) {
+	watcher, err := CreateWatcher(path, out)
+	if err != nil {
+		return errors.Wrapf(err, "adding new watcher for path %s", path)
+	}
+	watchers.add(path, watcher)
+
+	subFolders, err := listFolders(path)
+	if err != nil {
+		return errors.Wrapf(err, "creating watcher for subfolders of %s", path)
+	}
+
+	var folderPath string
+	for _, folder := range subFolders {
+		folderPath = path + "/" + folder
+
+		err := addWatcherRecursive(folderPath, out)
+		if err != nil {
+			return errors.Wrapf(err, "getting subfolders recursively for %s", folder)
+		}
+	}
+
+	return nil
+}
+
+func CreateWatcher(path string, out chan<- *proto.Response) (watcher *fsnotify.Watcher, err error) {
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		return errors.Wrap(err, "creating watcher")
+		return nil, errors.Wrap(err, "creating watcher")
 	}
 
 	err = watcher.Add(path)
 	if err != nil {
-		return errors.Wrap(err, "adding path to watcher")
+		return nil, errors.Wrap(err, "adding path to watcher")
 	}
 
 	log.Debugf("register watcher at %s\n", path)
@@ -37,6 +75,12 @@ func CreateWatcher(path string, out chan<- *proto.Response) (err error) {
 				}
 
 				if isFolder {
+					if isRecursively {
+						err = addWatcherRecursive(event.Name, out)
+						if err != nil {
+							out <- proto.ParseErrorToResponse(err)
+						}
+					}
 					continue
 				}
 			}
@@ -67,17 +111,14 @@ func CreateWatcher(path string, out chan<- *proto.Response) (err error) {
 				continue
 			}
 
-			fileData.Path = strings.Replace(fileData.Path, path, "", 1)
 			out <- proto.CreateFileResponse(fileData, eventType)
 		}
 	}()
 
-	return nil
+	return
 }
 
-func CloseWatcher() error {
-	if watcher != nil {
-		watcher.Close()
-	}
+func CloseWatchers() error {
+	watchers.clear()
 	return nil
 }
