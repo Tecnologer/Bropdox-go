@@ -26,3 +26,13 @@ func CreateFileResponse(file *File, _type TypeResponse) *Response {
 		},
 	}
 }
+
+func CreateFilesResponse(files []*File) *Response {
+	return &Response{
+		Content: &Response_FilesResponse{
+			FilesResponse: &FilesResponse{
+				Files: files,
+			},
+		},
+	}
+}
