@@ -23,7 +23,7 @@ type BropdoxClient interface {
 	RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
 	GetFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
 	GetFiles(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error)
-	Notifications(ctx context.Context, in *File, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error)
+	Notifications(ctx context.Context, in *NotificationsRequest, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error)
 }
 
 type bropdoxClient struct {
@@ -79,7 +79,7 @@ func (c *bropdoxClient) GetFiles(ctx context.Context, in *Empty, opts ...grpc.Ca
 	return out, nil
 }
 
-func (c *bropdoxClient) Notifications(ctx context.Context, in *File, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error) {
+func (c *bropdoxClient) Notifications(ctx context.Context, in *NotificationsRequest, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Bropdox_ServiceDesc.Streams[0], "/proto.Bropdox/Notifications", opts...)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ type BropdoxServer interface {
 	RemoveFile(context.Context, *File) (*Response, error)
 	GetFile(context.Context, *File) (*Response, error)
 	GetFiles(context.Context, *Empty) (*Response, error)
-	Notifications(*File, Bropdox_NotificationsServer) error
+	Notifications(*NotificationsRequest, Bropdox_NotificationsServer) error
 }
 
 // UnimplementedBropdoxServer should be embedded to have forward compatible implementations.
@@ -142,7 +142,7 @@ func (UnimplementedBropdoxServer) GetFile(context.Context, *File) (*Response, er
 func (UnimplementedBropdoxServer) GetFiles(context.Context, *Empty) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFiles not implemented")
 }
-func (UnimplementedBropdoxServer) Notifications(*File, Bropdox_NotificationsServer) error {
+func (UnimplementedBropdoxServer) Notifications(*NotificationsRequest, Bropdox_NotificationsServer) error {
 	return status.Errorf(codes.Unimplemented, "method Notifications not implemented")
 }
 
@@ -248,7 +248,7 @@ func _Bropdox_GetFiles_Handler(srv interface{}, ctx context.Context, dec func(in
 }
 
 func _Bropdox_Notifications_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(File)
+	m := new(NotificationsRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
