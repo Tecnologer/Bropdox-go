@@ -2,6 +2,12 @@ package proto
 
 import "fmt"
 
+func NewFile(path string) *File {
+	return &File{
+		Path: path,
+	}
+}
+
 func ParseErrorToResponse(err error) *Response {
 	return CreateErrorResponse(fmt.Sprint(err))
 }
