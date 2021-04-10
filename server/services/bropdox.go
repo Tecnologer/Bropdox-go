@@ -24,6 +24,14 @@ func (bs *BropdoxServer) RemoveFile(ctx context.Context, in *proto.File) (*proto
 	return proto.CreateFileResponse(in, proto.TypeResponse_DELETED), nil
 }
 
+func (bs *BropdoxServer) GetFile(ctx context.Context, in *proto.File) (*proto.Response, error) {
+	return proto.CreateFileResponse(in, proto.TypeResponse_UPDATED), nil
+}
+
+func (bs *BropdoxServer) GetFiles(ctx context.Context, _ *proto.Empty) (*proto.Response, error) {
+	return proto.CreateFilesResponse([]*proto.File{}), nil
+}
+
 func (bs *BropdoxServer) Notifications(in *proto.File, stream proto.Bropdox_NotificationsServer) error {
 	logrus.Debug("register for notifications")
 	notifications := make(chan *proto.Response, 5)
