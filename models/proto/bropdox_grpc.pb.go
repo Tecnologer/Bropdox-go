@@ -21,6 +21,8 @@ type BropdoxClient interface {
 	CreateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
 	UpdateFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
 	RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
+	GetFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error)
+	GetFiles(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error)
 	Notifications(ctx context.Context, in *File, opts ...grpc.CallOption) (Bropdox_NotificationsClient, error)
 }
 
@@ -53,6 +55,24 @@ func (c *bropdoxClient) UpdateFile(ctx context.Context, in *File, opts ...grpc.C
 func (c *bropdoxClient) RemoveFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error) {
 	out := new(Response)
 	err := c.cc.Invoke(ctx, "/proto.Bropdox/RemoveFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bropdoxClient) GetFile(ctx context.Context, in *File, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/proto.Bropdox/GetFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *bropdoxClient) GetFiles(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/proto.Bropdox/GetFiles", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +118,8 @@ type BropdoxServer interface {
 	CreateFile(context.Context, *File) (*Response, error)
 	UpdateFile(context.Context, *File) (*Response, error)
 	RemoveFile(context.Context, *File) (*Response, error)
+	GetFile(context.Context, *File) (*Response, error)
+	GetFiles(context.Context, *Empty) (*Response, error)
 	Notifications(*File, Bropdox_NotificationsServer) error
 }
 
@@ -113,6 +135,12 @@ func (UnimplementedBropdoxServer) UpdateFile(context.Context, *File) (*Response,
 }
 func (UnimplementedBropdoxServer) RemoveFile(context.Context, *File) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RemoveFile not implemented")
+}
+func (UnimplementedBropdoxServer) GetFile(context.Context, *File) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFile not implemented")
+}
+func (UnimplementedBropdoxServer) GetFiles(context.Context, *Empty) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFiles not implemented")
 }
 func (UnimplementedBropdoxServer) Notifications(*File, Bropdox_NotificationsServer) error {
 	return status.Errorf(codes.Unimplemented, "method Notifications not implemented")
@@ -183,6 +211,42 @@ func _Bropdox_RemoveFile_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Bropdox_GetFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(File)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BropdoxServer).GetFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Bropdox/GetFile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BropdoxServer).GetFile(ctx, req.(*File))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Bropdox_GetFiles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BropdoxServer).GetFiles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Bropdox/GetFiles",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BropdoxServer).GetFiles(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Bropdox_Notifications_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(File)
 	if err := stream.RecvMsg(m); err != nil {
@@ -222,6 +286,14 @@ var Bropdox_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveFile",
 			Handler:    _Bropdox_RemoveFile_Handler,
+		},
+		{
+			MethodName: "GetFile",
+			Handler:    _Bropdox_GetFile_Handler,
+		},
+		{
+			MethodName: "GetFiles",
+			Handler:    _Bropdox_GetFiles_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
