@@ -2,16 +2,17 @@ package services
 
 import (
 	"context"
-	"reflect"
+	"fmt"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/tecnologer/bropdox/models/file"
 	"github.com/tecnologer/bropdox/models/proto"
 )
 
 var (
 	folderPath = "./files"
+	clients    = map[string]proto.Bropdox_NotificationsServer{}
 )
 
 type BropdoxServer struct{}
@@ -73,17 +74,23 @@ func (bs *BropdoxServer) GetFiles(ctx context.Context, _ *proto.Empty) (*proto.R
 	return proto.CreateFilesResponse(filesRes), nil
 }
 
-func (bs *BropdoxServer) Notifications(in *proto.File, stream proto.Bropdox_NotificationsServer) error {
-	logrus.Debug("register for notifications")
+func (bs *BropdoxServer) Notifications(in *proto.NotificationsRequest, stream proto.Bropdox_NotificationsServer) error {
+	log.Debug("register for notifications")
+	if in.Id == "" {
+		return fmt.Errorf("the client ID is required")
+	}
+
 	notifications := make(chan *proto.Response, 5)
 	//dir, _ := os.Getwd()
 	err := file.CreateWatcherRecursive(folderPath, notifications)
 	if err != nil {
-		logrus.WithError(err).Debug("error creating watcher")
+		log.WithError(err).Debug("error creating watcher")
 		return err
 	}
 
-	logrus.Debug(folderPath)
+	log.Debugf("new client: %s", in.Id)
+	clients[in.Id] = stream
+
 	defer file.CloseWatchers()
 
 	go func() {
@@ -92,10 +99,14 @@ func (bs *BropdoxServer) Notifications(in *proto.File, stream proto.Bropdox_Noti
 	}()
 
 	for notif := range notifications {
-		if reflect.TypeOf(notif.Content).String() == "*proto.Response_FileResponse" {
-			(notif.Content.(*proto.Response_FileResponse)).FileResponse.File.Path = strings.Replace((notif.Content.(*proto.Response_FileResponse)).FileResponse.File.Path, folderPath, "", 1)
+		fileRes := notif.GetFileResponse()
+		if fileRes != nil {
+			fileRes.File.Path = strings.Replace(fileRes.File.Path, folderPath, "", 1)
 		}
-		stream.Send(notif)
+
+		for _, stm := range clients {
+			stm.Send(notif)
+		}
 	}
 	return nil
 }
