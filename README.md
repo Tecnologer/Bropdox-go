@@ -28,11 +28,18 @@ Remote File manager with Go + gRPC
 
 ## ToDo
 
-- [x] Detect Changes
-- [ ] Create File
-- [ ] Update File
-- [ ] Delete File
-- [ ] gRPC Client
-- [ ] GUI for Client
+- Server Side
+  - [x] Detect Changes
+  - [x] Create File
+  - [x] Update File
+  - [x] Delete File
+  - [x] Get File
+  - [x] Get Files (list)
+- Client Side
+  - [ ] Detect Changes
+  - [ ] Send File Created
+  - [ ] Send File Updated
+  - [ ] File Deleted
+  - [ ] Check status on startup and sync
 
 [1]: https://github.com/uw-labs/bloomrpc/releases
