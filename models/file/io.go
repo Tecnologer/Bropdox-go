@@ -1,17 +1,54 @@
 package file
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"github.com/tecnologer/bropdox/models/proto"
 )
 
-func Create(path string, content []byte) error {
+func Create(path string, content []byte) (err error) {
+	var file *os.File
+
+	if is, _ := IsFolder(path); is {
+		return fmt.Errorf("create file fails. The path is a folder")
+	}
+
+	if !Exists(path) {
+		file, err = os.Create(path)
+		if err != nil {
+			return errors.Wrapf(err, "creating new file %s", path)
+		}
+		log.WithField("path", path).Debugf("file created")
+	} else {
+		file, err = os.OpenFile(path, os.O_RDWR|os.O_TRUNC, 0755)
+		if err != nil {
+			return errors.Wrapf(err, "opening file %s", path)
+		}
+		log.WithField("path", path).Debugf("file opened")
+	}
+
+	err = file.Truncate(0)
+	if err != nil {
+		return errors.Wrapf(err, "updating content to file %s", path)
+	}
+
+	_, err = file.Write(content)
+	if err != nil {
+		return errors.Wrapf(err, "writing content to file %s", path)
+	}
+
 	return nil
+}
+
+func Remove(path string) error {
+	return os.Remove(path)
 }
 
 func GetContent(path string) ([]byte, error) {
@@ -23,9 +60,7 @@ func GetEmpty(path string) (*proto.File, error) {
 		path = "./" + path
 	}
 
-	return &proto.File{
-		Path: path,
-	}, nil
+	return proto.NewFile(path), nil
 }
 
 func Get(path string) (*proto.File, error) {
@@ -43,6 +78,11 @@ func Get(path string) (*proto.File, error) {
 	file.Content = data
 
 	return file, nil
+}
+
+func Exists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
 
 func IsFolder(path string) (bool, error) {
@@ -69,4 +109,21 @@ func listFolders(path string) ([]string, error) {
 		folders = append(folders, element.Name())
 	}
 	return folders, nil
+}
+
+func GetListFileRecursive(path string) ([]string, error) {
+	files := make([]string, 0)
+	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		files = append(files, path)
+		return nil
+	})
+
+	if err != nil {
+		return nil, errors.Wrapf(err, "listing files recursively in %s", path)
+	}
+
+	return files, nil
 }
