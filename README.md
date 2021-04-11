@@ -41,6 +41,8 @@ Remote File manager with Go + gRPC
   - [ ] Send File Created
   - [ ] Send File Updated
   - [ ] File Deleted
-  - [ ] Check status on startup and sync
+  - [x] Check status on startup and sync
+  - [x] Register for notifications
+  - [x] Update files on local from notifications (Create, Update & Remove)
 
 [1]: https://github.com/uw-labs/bloomrpc/releases
