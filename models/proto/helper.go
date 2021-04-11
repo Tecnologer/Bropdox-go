@@ -1,6 +1,9 @@
 package proto
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 func NewFile(path string) *File {
 	return &File{
@@ -41,4 +44,9 @@ func CreateFilesResponse(files []*File) *Response {
 			},
 		},
 	}
+}
+
+//GetFolderPath returns the path for the folder where the file is
+func (f *File) GetFolderPath() string {
+	return filepath.Dir(f.Path)
 }
