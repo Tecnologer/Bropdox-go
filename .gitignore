@@ -5,3 +5,4 @@ client/files
 
 server/server
 server/files/
+dist/
