@@ -1,5 +1,7 @@
 files/
-server/files/
 .vscode/
-/client/client
-/server/server
+client/client
+client/files
+
+server/server
+server/files/
