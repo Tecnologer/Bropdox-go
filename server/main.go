@@ -16,10 +16,13 @@ import (
 )
 
 var (
-	verbouse = flag.Bool("v", false, "enanble verbouse log")
-	port     = flag.Int("port", 8081, "port of host to expose the server")
+	verbouse    = flag.Bool("v", false, "enanble verbouse log")
+	port        = flag.Int("port", 8081, "port of host to expose the server")
+	versionFlag = flag.Bool("version", false, "returns the version of the build")
 
-	host string
+	version    string
+	minversion string
+	host       string
 )
 
 func init() {
@@ -33,6 +36,7 @@ func init() {
 }
 
 func main() {
+	checkVersion()
 	listener, err := net.Listen("tcp", host)
 
 	if err != nil {
@@ -70,4 +74,29 @@ func main() {
 	// fmt.Println("Closing MongoDB connection")
 	// db.Disconnect(mongoCtx)
 	fmt.Println("Done.")
+}
+
+func checkVersion() {
+	if len(os.Args) < 2 {
+		return
+	}
+
+	if *versionFlag || argsConstainsVersion() {
+		printVersion()
+	}
+}
+
+func printVersion() {
+	fmt.Printf("%s%s\n", version, minversion)
+	os.Exit(0)
+}
+
+func argsConstainsVersion() bool {
+	for _, a := range os.Args {
+		if a == "version" || a == "--version" {
+			return true
+		}
+	}
+
+	return false
 }

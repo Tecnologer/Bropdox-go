@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -15,12 +16,15 @@ import (
 )
 
 var (
-	folderPath = flag.String("path", "./files", "folder to store the files")
-	verbouse   = flag.Bool("v", false, "enanble verbouse log")
-	ip         = flag.String("ip", "", "ip of the server")
-	port       = flag.Int("port", 8081, "port of the server")
+	folderPath  = flag.String("path", "./files", "folder to store the files")
+	verbouse    = flag.Bool("v", false, "enanble verbouse log")
+	ip          = flag.String("ip", "", "ip of the server")
+	port        = flag.Int("port", 8081, "port of the server")
+	versionFlag = flag.Bool("version", false, "returns the version of the build")
 
-	host string
+	version    string
+	minversion string
+	host       string
 )
 
 func init() {
@@ -28,11 +32,16 @@ func init() {
 	if *verbouse {
 		log.SetLevel(log.DebugLevel)
 	}
-
+	err := files.MkdirIfNotExists(*folderPath)
+	if err != nil {
+		log.WithError(err).Errorf("creating the root folder: %s", folderPath)
+	}
 	host = fmt.Sprintf("%s:%d", *ip, *port)
 }
 
 func main() {
+	checkVersion()
+
 	opts := []grpc.DialOption{
 		grpc.WithInsecure(),
 	}
@@ -62,35 +71,37 @@ func main() {
 
 	}
 
-	remoteFiles := []string{}
-	for _, file := range filesResponse.Files {
-		fmt.Printf("\t- %s\n", file.Path)
+	if filesResponse != nil {
+		remoteFiles := []string{}
+		for _, file := range filesResponse.Files {
+			fmt.Printf("\t- %s\n", file.Path)
 
-		remoteFiles = append(remoteFiles, file.Path)
+			remoteFiles = append(remoteFiles, file.Path)
 
-		fileRes, err := client.GetFile(context.Background(), file)
-		if err != nil {
-			log.WithError(err).Warnf("sync files: %s")
-			continue
+			fileRes, err := client.GetFile(context.Background(), file)
+			if err != nil {
+				log.WithError(err).Warnf("sync files: %s")
+				continue
+			}
+			eRes := fileRes.GetErrorResponse()
+			if eRes != nil {
+				log.Warnf("sync files: trying get file. Response: %s. Path: %s", eRes.Message, file.Path)
+				continue
+			}
+
+			fRes := fileRes.GetFileResponse()
+
+			path := fmt.Sprintf("%s%s", *folderPath, fRes.File.Path)
+			path = strings.Replace(path, "//", "/", -1)
+			err = files.CreateOrUpdate(path, fRes.File.Content)
+			if err != nil {
+				log.WithError(err).Warnf("sync files: downloading file %s", path)
+				continue
+			}
 		}
-		eRes := fileRes.GetErrorResponse()
-		if eRes != nil {
-			log.Warnf("sync files: trying get file. Response: %s. Path: %s", eRes.Message, file.Path)
-			continue
-		}
 
-		fRes := fileRes.GetFileResponse()
-
-		path := fmt.Sprintf("%s%s", *folderPath, fRes.File.Path)
-		path = strings.Replace(path, "//", "/", -1)
-		err = files.CreateOrUpdate(path, fRes.File.Content)
-		if err != nil {
-			log.WithError(err).Warnf("sync files: downloading file %s", path)
-			continue
-		}
+		compareLocalFilesWRemote(localFiles, remoteFiles)
 	}
-
-	compareLocalFilesWRemote(localFiles, remoteFiles)
 
 	notifReq := &proto.NotificationsRequest{
 		Id: fmt.Sprint(time.Now().Unix()),
@@ -104,7 +115,8 @@ func main() {
 	for {
 		response, err := notifications.Recv()
 		if err != nil {
-			log.WithError(err).Warn("register for notifications")
+			log.WithError(err).Warn("new error notification")
+			continue
 		}
 		errorResponse := response.GetErrorResponse()
 		if errorResponse != nil {
@@ -156,4 +168,29 @@ func compareLocalFilesWRemote(localFiles, remoteFiles []string) {
 			files.Remove(path)
 		}
 	}
+}
+
+func checkVersion() {
+	if len(os.Args) < 2 {
+		return
+	}
+
+	if *versionFlag || argsConstainsVersion() {
+		printVersion()
+	}
+}
+
+func printVersion() {
+	fmt.Printf("%s%s\n", version, minversion)
+	os.Exit(0)
+}
+
+func argsConstainsVersion() bool {
+	for _, a := range os.Args {
+		if a == "version" || a == "--version" {
+			return true
+		}
+	}
+
+	return false
 }
