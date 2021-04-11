@@ -19,6 +19,13 @@ var (
 
 type BropdoxServer struct{}
 
+func init() {
+	err := files.MkdirIfNotExists(folderPath)
+	if err != nil {
+		log.WithError(err).Errorf("creating the root folder: %s", folderPath)
+	}
+}
+
 func (bs *BropdoxServer) CreateFile(ctx context.Context, in *proto.File) (*proto.Response, error) {
 	err := files.CreateOrUpdate(folderPath+"/"+in.Path, in.Content)
 	if err != nil {
