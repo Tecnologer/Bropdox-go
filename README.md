@@ -2,6 +2,52 @@
 
 Remote File manager with Go + gRPC
 
+## How to use it?
+
+### Server
+
+1. [Download][2] your version
+1. Run the binary
+1. Use the folling flags
+   ```txt
+   -port int
+      port of host to expose the server (default 8081)
+   -v	enanble verbouse log
+   -version
+    	returns the version of the build
+   ```
+
+Example:
+
+```bash
+./bropdox-server_<version_os_arch> -port 8080
+```
+
+### Client
+
+1. [Download][2] your version
+1. Run the binary
+1. Use the folling flags
+
+   ```txt
+     -ip string
+        ip of the server
+    -path string
+        folder to store the files (default "./files")
+    -port int
+        port of the server (default 8081)
+    -v	enanble verbouse log
+    -version
+        returns the version of the build
+
+   ```
+
+Example:
+
+```bash
+./bropdox-server_<version_os_arch> -port 8080 -path '~/Documents/bropdox-files'
+```
+
 ## Code
 
 1. `git clone https://github.com/Tecnologer/Bropdox-go.git $GOPATH/src/github.com/tecnologer/bropdox`
@@ -36,6 +82,7 @@ Remote File manager with Go + gRPC
   - [x] Get File
   - [x] Get Files (list)
   - [ ] Support multiple clients
+  - [ ] Use flag to set the root folder
 - Client Side
   - [x] Detect Changes
   - [x] Send File Created
@@ -47,3 +94,4 @@ Remote File manager with Go + gRPC
   - [x] Update files on local from notifications (Create, Update & Remove)
 
 [1]: https://github.com/uw-labs/bloomrpc/releases
+[2]: https://github.com/Tecnologer/Bropdox-go/releases
