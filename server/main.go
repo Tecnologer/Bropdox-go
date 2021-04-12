@@ -10,8 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tecnologer/bropdox/models/proto"
 	"github.com/tecnologer/bropdox/server/services"
-	"github.com/tecnologer/go-secrets"
-	"github.com/tecnologer/go-secrets/config"
 	"google.golang.org/grpc"
 )
 
@@ -32,7 +30,6 @@ func init() {
 	}
 
 	host = fmt.Sprintf(":%d", *port)
-	secrets.InitWithConfig(&config.Config{})
 }
 
 func main() {
