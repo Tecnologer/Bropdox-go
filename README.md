@@ -54,8 +54,21 @@ Example:
 2. `cd $GOPATH/src/github.com/tecnologer/bropdox`
 3. `git submodule init`
 4. `git submodule update`
-5. `cd server`
+5. `cd server`, change to `cd client` to run the client version
 6. `go run main.go`
+
+### Generate binaries with Make
+
+You could use **Make** to generate binary files for client and server:
+
+- For client:
+  `make client-local`
+- For server:
+  `make server-local`
+
+> The binaries will be stored in `./dist/<server|client>`
+
+Note: You can use onle `make` to generate both binaries.
 
 ## Test With BloomRPC
 
