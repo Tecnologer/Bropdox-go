@@ -84,7 +84,7 @@ func checkVersion() {
 }
 
 func printVersion() {
-	fmt.Printf("%s%s\n", version, minversion)
+	fmt.Printf("bropdox server %s%s\n", version, minversion)
 	os.Exit(0)
 }
 
