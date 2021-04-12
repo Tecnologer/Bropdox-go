@@ -15,6 +15,7 @@ var (
 	folderPath    = "./files"
 	clients       = models.NewClientCollection()
 	notifications = make(chan *proto.Response, 5)
+	isClosed      = false
 )
 
 type BropdoxServer struct{}
@@ -89,6 +90,11 @@ func (bs *BropdoxServer) Notifications(in *proto.NotificationsRequest, stream pr
 		return fmt.Errorf("the client ID is required")
 	}
 
+	if isClosed {
+		log.Debug("channel reopened")
+		notifications = make(chan *proto.Response, 5)
+	}
+
 	//dir, _ := os.Getwd()
 	err := files.CreateWatcherRecursive(folderPath, notifications)
 	if err != nil {
@@ -104,7 +110,12 @@ func (bs *BropdoxServer) Notifications(in *proto.NotificationsRequest, stream pr
 
 	go func() {
 		<-stream.Context().Done()
-		close(notifications)
+		log.Debug("channel closed")
+
+		if !isClosed {
+			close(notifications)
+			isClosed = true
+		}
 	}()
 
 	for notif := range notifications {
