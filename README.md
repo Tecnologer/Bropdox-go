@@ -37,11 +37,12 @@ Remote File manager with Go + gRPC
   - [x] Get Files (list)
   - [ ] Support multiple clients
 - Client Side
-  - [ ] Detect Changes
-  - [ ] Send File Created
-  - [ ] Send File Updated
-  - [ ] File Deleted
-  - [x] Check status on startup and sync
+  - [x] Detect Changes
+  - [x] Send File Created
+  - [x] Send File Updated
+  - [x] File Deleted
+  - [ ] Check status on startup and sync
+    - [x] Delete files deleted on server
   - [x] Register for notifications
   - [x] Update files on local from notifications (Create, Update & Remove)
 
