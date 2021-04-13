@@ -103,6 +103,7 @@ Note: You can use onle `make` to generate both binaries.
   - [x] File Deleted
   - [ ] Check status on startup and sync
     - [x] Delete files deleted on server
+    - [ ] Update files created offline
   - [x] Register for notifications
   - [x] Update files on local from notifications (Create, Update & Remove)
 - Makefile
