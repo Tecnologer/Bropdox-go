@@ -1,8 +1,8 @@
-files/
+./files/
 .vscode/
 client/client
 client/files
 
-server/server
+./server/server
 server/files/
 dist/
